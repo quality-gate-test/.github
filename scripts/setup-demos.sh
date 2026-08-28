@@ -22,6 +22,8 @@ echo "=== 2. Create + push demo-node ==="
 "$GH" repo create "$ORG/demo-node" --public 2>/dev/null || echo "  (demo-node already exists, continuing)"
 cd "$ROOT/demos/demo-node"
 git init -q
+git config user.email "ci@org.local"
+git config user.name "Org CI"
 git add -A
 git commit -q -m "init: demo-node (validates the org quality gate)"
 git branch -M main
