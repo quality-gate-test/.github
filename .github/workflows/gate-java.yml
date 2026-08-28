@@ -14,7 +14,7 @@ on:
         type: string
         default: 'temurin'
       build-tool:
-        description: 'maven' | 'gradle'
+        description: 'maven / gradle'
         required: false
         type: string
         default: 'maven'

@@ -14,7 +14,7 @@ on:
         type: boolean
         default: true
       package-manager:
-        description: 'npm' | 'pnpm' | 'yarn'
+        description: 'npm / pnpm / yarn'
         required: false
         type: string
         default: 'npm'
