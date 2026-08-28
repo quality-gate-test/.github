@@ -1,69 +1,70 @@
 #!/usr/bin/env bash
-# create-repo-ruleset.sh — apply a REPOSITORY-LEVEL ruleset to every repo in the org.
+# create-repo-ruleset.sh — apply a REPOSITORY-LEVEL ruleset to every (non-archived)
+# repo in the org. Free-plan compatible (org-level rulesets need Enterprise/Team).
 #
-# This is the free-plan-compatible alternative to org-level rulesets. Each repo
-# gets an identical ruleset on its main branch; the script makes the rollout uniform.
-# Re-run after adding new repos, or after editing CHECK_CONTEXTS, to refresh them all.
+# Run AFTER each repo's ci.yml has run at least once, so the check contexts are
+# registered with GitHub (a context can only be *required* once it has reported).
 #
-# Run AFTER the reusable workflows exist in ORG/.github AND after each repo's
-# ci.yml has run at least once successfully (so the check contexts are registered).
+# Uses gh's built-in --jq filter (no system jq needed).
 #
 # Usage:  ORG=quality-gate-test ./create-repo-ruleset.sh
-# Requires: gh (authed), jq.
 set -euo pipefail
+export PATH="/c/Program Files/GitHub CLI:$PATH"
 
 ORG="${ORG:-quality-gate-test}"
-BRANCHES="${BRANCHES:-main master develop release/*}"
+ENFORCE="${ENFORCE:-active}"   # "active" = enforce, "evaluate" = dry-run
 
 if ! command -v gh >/dev/null 2>&1; then
   echo "ERROR: gh CLI not found." >&2; exit 1
 fi
 
-# Required check contexts. The caller job in ci.yml is named `gate`; the reusable
-# jobs inside are `lint`/`test`/`build`, so GitHub shows them as "gate / lint" etc.
-# IMPORTANT: a context can only be *required* after it has run once on the branch.
-CHECK_CONTEXTS='["gate / lint", "gate / test", "gate / build"]'
-
-# Build branch include array dynamically.
-build_payload() {
-  jq -n --argjson checks "$CHECK_CONTEXTS" --argjson branches "$(printf '"refs/heads/%s"\n' $BRANCHES | jq -s .)" '{
-    target: "branch",
-    "source": "RepositoryConfig",
-    enforcement: "active",
-    name: "quality-gate",
-    "conditions": { "ref_name": { "include": $branches, "exclude": [] } },
-    rules: [
-      { "type": "required_status_checks",
-        "parameters": { "strict": true, "contexts": $checks } },
-      { "type": "pull_request",
-        "parameters": { "required_approving_review_count": 1, "dismiss_stale_reviews": true } },
-      { "type": "required_linear_history" },
-      { "type": "deletion" }
-    ]
-  }'
+payload() {
+  cat <<JSON
+{
+  "target": "branch",
+  "source": "RepositoryConfig",
+  "enforcement": "$ENFORCE",
+  "name": "quality-gate",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main","refs/heads/master","refs/heads/develop","refs/heads/release/*"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    { "type": "required_status_checks",
+      "parameters": { "strict": true,
+        "contexts": ["gate / lint","gate / test","gate / build"] } },
+    { "type": "pull_request",
+      "parameters": { "required_approving_review_count": 1,
+        "dismiss_stale_reviews": true,
+        "require_code_owner_reviews": false,
+        "require_last_push_approval": false } },
+    { "type": "required_linear_history" },
+    { "type": "deletion" }
+  ]
+}
+JSON
 }
 
 echo "Listing non-archived repos in $ORG ..."
+# gh's internal --jq works without system jq.
 mapfile -t REPOS < <(gh repo list "$ORG" --limit 200 --json name,isArchived --jq '.[] | select(.isArchived == false) | .name')
 
 if [ "${#REPOS[@]}" -eq 0 ]; then
-  echo "No repos found in $ORG. Create some repos with ci.yml first (see bootstrap-ci.sh)." >&2
-  exit 0
+  echo "No repos found in $ORG." >&2; exit 0
 fi
 
 for repo in "${REPOS[@]}"; do
   [ "$repo" = ".github" ] && { echo "  skip .github (no app code)"; continue; }
   echo "==> $repo"
-  # delete any prior same-named ruleset (so re-runs are idempotent-ish)
+  # delete a prior same-named ruleset so re-runs are idempotent
   existing=$(gh api "repos/$ORG/$repo/rulesets" --jq '.[] | select(.name=="quality-gate") | .id' 2>/dev/null || true)
   for id in $existing; do
     gh api -X DELETE "repos/$ORG/$repo/rulesets/$id" >/dev/null 2>&1 || true
   done
-  build_payload | gh api -X POST "repos/$ORG/$repo/rulesets" --input - >/dev/null && echo "    applied" || echo "    FAILED"
+  payload | gh api -X POST "repos/$ORG/$repo/rulesets" --input - >/dev/null && echo "    applied ($ENFORCE)" || echo "    FAILED"
 done
 
 echo
-echo "Done. Verify:  gh api repos/$ORG/<repo>/rulesets | jq"
-echo
-echo "NOTE: required_status_checks only blocks merges for contexts that have already run"
-echo "on the target branch. If a check hasn't run yet GitHub shows it as 'expected'."
+echo "Done. Verify:  gh api repos/$ORG/demo-node/rulesets"

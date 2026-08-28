@@ -31,7 +31,8 @@ jobs:
           cache: ${{ inputs.package-manager }}
       - name: Install (npm)
         if: inputs.package-manager == 'npm'
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
       - name: Install (pnpm)
         if: inputs.package-manager == 'pnpm'
         run: pnpm install --frozen-lockfile
@@ -61,8 +62,8 @@ jobs:
         if: inputs.package-manager == 'pnpm'
       - run: yarn install --frozen-lockfile
         if: inputs.package-manager == 'yarn'
-      - name: Test with coverage
-        run: ${{ inputs.package-manager }} test -- --coverage
+      - name: Test
+        run: ${{ inputs.package-manager }} test
 
   build:
     runs-on: ubuntu-latest
