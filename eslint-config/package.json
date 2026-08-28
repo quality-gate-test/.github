@@ -1,7 +1,7 @@
 {
-  "name": "@__ORG__/eslint-config",
+  "name": "@quality-gate-test/eslint-config",
   "version": "1.0.0",
-  "description": "Shared ESLint config for __ORG__ repos",
+  "description": "Shared ESLint config for quality-gate-test repos",
   "main": "index.js",
   "exports": {
     ".": "./index.js",

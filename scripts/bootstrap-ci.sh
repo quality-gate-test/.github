@@ -7,11 +7,11 @@
 #   data-pipeline   python  python-version=3.12
 #
 # Usage:
-#   ORG=__ORG__ ./bootstrap-ci.sh
+#   ORG=quality-gate-test ./bootstrap-ci.sh
 # Requires: gh (authed), git, jq.
 set -euo pipefail
 
-ORG="${ORG:-__ORG__}"
+ORG="${ORG:-quality-gate-test}"
 TPL_DIR="$(cd "$(dirname "$0")/.." && pwd)/.github/workflow-templates"
 BRANCH="${BRANCH:-ci/add-quality-gate}"
 

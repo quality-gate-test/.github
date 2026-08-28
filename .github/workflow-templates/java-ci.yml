@@ -6,7 +6,7 @@ on:
 
 jobs:
   gate:
-    uses: __ORG__/.github/.github/workflows/gate-java.yml@main
+    uses: quality-gate-test/.github/.github/workflows/gate-java.yml@main
     with:
       java-version: '17'
       build-tool: 'maven'   # maven | gradle

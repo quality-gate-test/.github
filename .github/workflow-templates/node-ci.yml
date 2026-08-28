@@ -9,7 +9,7 @@ on:
 
 jobs:
   gate:
-    uses: __ORG__/.github/.github/workflows/gate-node.yml@main
+    uses: quality-gate-test/.github/.github/workflows/gate-node.yml@main
     with:
       node-version: '20'
       package-manager: 'npm'   # npm | pnpm | yarn

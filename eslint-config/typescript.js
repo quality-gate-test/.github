@@ -1,5 +1,5 @@
 // Shared TypeScript ESLint config.
-// Consume:  extends: ['@__ORG__/eslint-config/typescript']
+// Consume:  extends: ['@quality-gate-test/eslint-config/typescript']
 module.exports = {
   extends: ['plugin:@typescript-eslint/recommended', 'prettier'],
   parser: '@typescript-eslint/parser',

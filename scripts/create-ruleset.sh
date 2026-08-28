@@ -6,11 +6,11 @@
 # ci.yml has produced at least one successful run (so the check contexts are
 # registered — GitHub only accepts registered contexts as "required").
 #
-# Usage:  ORG=__ORG__ ./create-ruleset.sh
+# Usage:  ORG=quality-gate-test ./create-ruleset.sh
 # Requires: gh (authed), jq.
 set -euo pipefail
 
-ORG="${ORG:-__ORG__}"
+ORG="${ORG:-quality-gate-test}"
 
 if ! command -v gh >/dev/null 2>&1; then
   echo "ERROR: gh CLI not found." >&2; exit 1

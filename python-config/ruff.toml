@@ -21,4 +21,4 @@ ignore = ["E501"]  # line length handled by formatter
 docstring-code-format = true
 
 [lint.isort]
-known-first-party = ["__ORG__"]
+known-first-party = ["quality-gate-test"]

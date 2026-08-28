@@ -6,7 +6,7 @@ on:
 
 jobs:
   gate:
-    uses: __ORG__/.github/.github/workflows/gate-python.yml@main
+    uses: quality-gate-test/.github/.github/workflows/gate-python.yml@main
     with:
       python-version: '3.12'
       run-mypy: true

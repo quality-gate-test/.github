@@ -1,7 +1,7 @@
 # Org shared CI gate
 
-This repo (`__ORG__/.github`) is the **central place** that defines code-quality gates
-for every repository in the `__ORG__` organization. Each service repo references these
+This repo (`quality-gate-test/.github`) is the **central place** that defines code-quality gates
+for every repository in the `quality-gate-test` organization. Each service repo references these
 reusable workflows — change a gate once here, every repo picks it up on its next CI run.
 
 ## Layout
@@ -11,7 +11,7 @@ reusable workflows — change a gate once here, every repo picks it up on its ne
 .github/workflows/gate-java.yml      # reusable gate for Java (Maven/Gradle)
 .github/workflows/gate-python.yml    # reusable gate for Python
 .github/workflow-templates/*.yml     # starter ci.yml a repo drops into .github/workflows/
-eslint-config/                      # shared ESLint config (publish as @__ORG__/eslint-config)
+eslint-config/                      # shared ESLint config (publish as @quality-gate-test/eslint-config)
 python-config/ruff.toml              # shared ruff/mypy config
 scripts/bootstrap-ci.sh             # add ci.yml to every repo (reads repos.tsv)
 scripts/create-ruleset.sh           # create org-level ruleset (required checks + PR)
@@ -24,12 +24,12 @@ repos.tsv                           # (you create this) repo → lang mapping fo
    ```bash
    cd org-dotgithub
    git init && git add -A && git commit -m "init: org quality gate"
-   gh repo create __ORG__/.github --public --source=. --push
+   gh repo create quality-gate-test/.github --public --source=. --push
    ```
 
 2. For each existing repo, add a CI workflow (creates a PR per repo):
    ```bash
-   ORG=__ORG__ ./scripts/bootstrap-ci.sh   # after you write repos.tsv (see below)
+   ORG=quality-gate-test ./scripts/bootstrap-ci.sh   # after you write repos.tsv (see below)
    ```
    `repos.tsv` format (TAB-separated):
    ```
@@ -43,7 +43,7 @@ repos.tsv                           # (you create this) repo → lang mapping fo
 
 4. Turn on enforcement (org-level ruleset):
    ```bash
-   ORG=__ORG__ ./scripts/create-ruleset.sh
+   ORG=quality-gate-test ./scripts/create-ruleset.sh
    ```
    Start with `enforcement: "evaluate"` (dry-run) if you want to preview before enforcing.
 
@@ -77,4 +77,4 @@ repo-scoped ruleset for exceptions).
 - **`workflow_call` not allowed** — in the `.github` repo settings, the workflow
   must be on the default branch; reusable workflows can only be called from the
   default branch ref (`@main`).
-- **Check runs as different name** — confirm via `gh api /repos/__ORG__/<repo>/commits/<sha>/check-runs`.
+- **Check runs as different name** — confirm via `gh api /repos/quality-gate-test/<repo>/commits/<sha>/check-runs`.
