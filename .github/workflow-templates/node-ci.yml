@@ -1,0 +1,16 @@
+# CI for a Node.js / TypeScript service.
+# Drop this file into any org repo at .github/workflows/ci.yml
+# then customize the `with:` inputs as needed.
+name: CI
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+jobs:
+  gate:
+    uses: __ORG__/.github/.github/workflows/gate-node.yml@main
+    with:
+      node-version: '20'
+      package-manager: 'npm'   # npm | pnpm | yarn
+      run-build: true

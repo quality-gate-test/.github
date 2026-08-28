@@ -1,0 +1,24 @@
+# Shared Python config (ruff/mypy) — copy or extend in each repo.
+# Place at repo root as ruff.toml, or merge into [tool.ruff] in pyproject.toml.
+
+target-version = "py312"
+line-length = 100
+
+[lint]
+# Default rule set: a pragmatic, widely-adopted baseline.
+select = [
+  "E",    # pycodestyle errors
+  "F",    # pyflakes
+  "I",    # isort
+  "UP",   # pyupgrade
+  "B",    # flake8-bugbear
+  "SIM",  # flake8-simplify
+  "C4",   # flake8-comprehensions
+]
+ignore = ["E501"]  # line length handled by formatter
+
+[format]
+docstring-code-format = true
+
+[lint.isort]
+known-first-party = ["__ORG__"]

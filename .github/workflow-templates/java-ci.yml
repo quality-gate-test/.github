@@ -1,0 +1,12 @@
+name: CI
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+jobs:
+  gate:
+    uses: __ORG__/.github/.github/workflows/gate-java.yml@main
+    with:
+      java-version: '17'
+      build-tool: 'maven'   # maven | gradle

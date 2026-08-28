@@ -1,0 +1,84 @@
+name: Gate - Node.js / TypeScript
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version
+        required: false
+        type: string
+        default: '20'
+      run-build:
+        description: Whether to run the build step
+        required: false
+        type: boolean
+        default: true
+      package-manager:
+        description: 'npm' | 'pnpm' | 'yarn'
+        required: false
+        type: string
+        default: 'npm'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: ${{ inputs.package-manager }}
+      - name: Install (npm)
+        if: inputs.package-manager == 'npm'
+        run: npm ci
+      - name: Install (pnpm)
+        if: inputs.package-manager == 'pnpm'
+        run: pnpm install --frozen-lockfile
+      - name: Install (yarn)
+        if: inputs.package-manager == 'yarn'
+        run: yarn install --frozen-lockfile
+      - name: Lint
+        run: ${{ inputs.package-manager }} run lint
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+      - name: Typecheck
+        run: ${{ inputs.package-manager }} run typecheck
+        continue-on-error: ${{ vars.TYPECHECK_NONBLOCKING == 'true' }}
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: ${{ inputs.package-manager }}
+      - run: npm ci
+        if: inputs.package-manager == 'npm'
+      - run: pnpm install --frozen-lockfile
+        if: inputs.package-manager == 'pnpm'
+      - run: yarn install --frozen-lockfile
+        if: inputs.package-manager == 'yarn'
+      - name: Test with coverage
+        run: ${{ inputs.package-manager }} test -- --coverage
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: inputs.run-build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: ${{ inputs.package-manager }}
+      - run: npm ci
+        if: inputs.package-manager == 'npm'
+      - run: pnpm install --frozen-lockfile
+        if: inputs.package-manager == 'pnpm'
+      - run: yarn install --frozen-lockfile
+        if: inputs.package-manager == 'yarn'
+      - name: Build
+        run: ${{ inputs.package-manager }} run build

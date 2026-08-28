@@ -1,0 +1,18 @@
+{
+  "name": "@__ORG__/eslint-config",
+  "version": "1.0.0",
+  "description": "Shared ESLint config for __ORG__ repos",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./typescript": "./typescript.js"
+  },
+  "peerDependencies": {
+    "eslint": ">=8"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^7",
+    "@typescript-eslint/parser": "^7",
+    "eslint-config-prettier": "^9"
+  }
+}
