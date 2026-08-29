@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          cache: ${{ inputs.package-manager }}
+          cache: ${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json', 'yarn.lock', 'pnpm-lock.yaml') != '' && inputs.package-manager || '' }}
       - name: Install (npm)
         if: inputs.package-manager == 'npm'
         run: |
@@ -55,8 +55,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          cache: ${{ inputs.package-manager }}
-      - run: npm ci
+          cache: ${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json', 'yarn.lock', 'pnpm-lock.yaml') != '' && inputs.package-manager || '' }}
+      - run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
         if: inputs.package-manager == 'npm'
       - run: pnpm install --frozen-lockfile
         if: inputs.package-manager == 'pnpm'
@@ -74,8 +75,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          cache: ${{ inputs.package-manager }}
-      - run: npm ci
+          cache: ${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json', 'yarn.lock', 'pnpm-lock.yaml') != '' && inputs.package-manager || '' }}
+      - run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
         if: inputs.package-manager == 'npm'
       - run: pnpm install --frozen-lockfile
         if: inputs.package-manager == 'pnpm'
